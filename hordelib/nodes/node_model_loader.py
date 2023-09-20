@@ -53,7 +53,7 @@ class HordeCheckpointLoader:
             try:
                 with model_manager.manager.disk_read_mutex:
                     with open(model, "rb") as cache:
-                        c = zstd.ZstdCompressor()
+                        c = zstd.ZstdDecompressor()
                         with c.stream_reader(cache) as decompressor:
                             d = pickle.load(decompressor)
                             model = d['model']
