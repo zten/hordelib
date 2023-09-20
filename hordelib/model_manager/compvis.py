@@ -110,16 +110,16 @@ class CompVisModelManager(BaseModelManager):
                 with self._disk_write_mutex:
                     with open(cache_file, "wb") as cache:
                         c = zstd.ZstdCompressor()
-                        with c.stream_writer(cache) as compressor:
-                            pickle.dump(
-                                {
-                                    'model': self.get_loaded_model(model_name)['model'],
-                                    'vae':  self.get_loaded_model(model_name)['vae'],
-                                    'clip':  self.get_loaded_model(model_name)['clip']
-                                },
-                                compressor,
-                                protocol=pickle.HIGHEST_PROTOCOL
-                            )
+                        raw_bytes = c.compress(pickle.dumps(
+                            {
+                                'model': self.get_loaded_model(model_name)['model'],
+                                'vae':  self.get_loaded_model(model_name)['vae'],
+                                'clip':  self.get_loaded_model(model_name)['clip']
+                            },
+                            protocol=pickle.HIGHEST_PROTOCOL
+                        ))
+                        cache.write(raw_bytes)
+
             for component in components:
                 model_data[component] = cache_file
             # Remove from vram/ram
