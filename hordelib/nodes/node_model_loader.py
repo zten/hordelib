@@ -55,9 +55,10 @@ class HordeCheckpointLoader:
                     with open(model, "rb") as cache:
                         c = zstd.ZstdCompressor()
                         with c.stream_reader(cache) as decompressor:
-                            model = pickle.load(decompressor)
-                            vae = pickle.load(decompressor)
-                            clip = pickle.load(decompressor)
+                            d = pickle.load(decompressor)
+                            model = d['model']
+                            vae = d['vae']
+                            clip = d['clip']
                 # Record this model as being in ram again
                 model_manager.manager.move_from_disk_cache(model_name, model, clip, vae)
                 logger.info(

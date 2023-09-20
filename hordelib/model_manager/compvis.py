@@ -111,12 +111,15 @@ class CompVisModelManager(BaseModelManager):
                     with open(cache_file, "wb") as cache:
                         c = zstd.ZstdCompressor()
                         with c.stream_writer(cache) as compressor:
-                            for component in components:
-                                pickle.dump(
-                                    self.get_loaded_model(model_name)[component],
-                                    compressor,
-                                    protocol=pickle.HIGHEST_PROTOCOL,
-                                )
+                            pickle.dump(
+                                {
+                                    'model': self.get_loaded_model(model_name)['model'],
+                                    'vae':  self.get_loaded_model(model_name)['vae'],
+                                    'clip':  self.get_loaded_model(model_name)['clip']
+                                },
+                                compressor,
+                                protocol=pickle.HIGHEST_PROTOCOL
+                            )
             for component in components:
                 model_data[component] = cache_file
             # Remove from vram/ram
