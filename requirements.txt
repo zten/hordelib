@@ -42,3 +42,4 @@ unidecode
 fuzzywuzzy
 horde_clipfree==0.0.2
 strenum
+zstandard
