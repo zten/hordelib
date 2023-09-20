@@ -70,7 +70,7 @@ class CompVisModelManager(BaseModelManager):
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
         cache_file = os.path.join(cache_dir, model_name)
-        return f"{cache_file}.hordelib.cache.zstd"
+        return f"{cache_file}.hordelib.cache.zst"
 
     def have_model_cache(self, model_name):
         model_filename = self.getFullModelPath(model_name)
