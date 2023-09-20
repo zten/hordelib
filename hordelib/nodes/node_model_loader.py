@@ -5,6 +5,7 @@ import contextlib
 import os
 import pickle
 import time
+import zstandard as zstd
 
 from loguru import logger
 
@@ -52,9 +53,11 @@ class HordeCheckpointLoader:
             try:
                 with model_manager.manager.disk_read_mutex:
                     with open(model, "rb") as cache:
-                        model = pickle.load(cache)
-                        vae = pickle.load(cache)
-                        clip = pickle.load(cache)
+                        c = zstd.ZstdCompressor()
+                        with c.stream_reader(cache) as decompressor:
+                            model = pickle.load(decompressor)
+                            vae = pickle.load(decompressor)
+                            clip = pickle.load(decompressor)
                 # Record this model as being in ram again
                 model_manager.manager.move_from_disk_cache(model_name, model, clip, vae)
                 logger.info(

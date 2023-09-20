@@ -2,6 +2,7 @@ import copy
 import os
 import pickle
 import typing
+import zstandard as zstd
 
 from loguru import logger
 from typing_extensions import override
@@ -69,7 +70,7 @@ class CompVisModelManager(BaseModelManager):
         if not os.path.isdir(cache_dir):
             os.makedirs(cache_dir, exist_ok=True)
         cache_file = os.path.join(cache_dir, model_name)
-        return f"{cache_file}.hordelib.cache"
+        return f"{cache_file}.hordelib.cache.zstd"
 
     def have_model_cache(self, model_name):
         model_filename = self.getFullModelPath(model_name)
@@ -108,12 +109,14 @@ class CompVisModelManager(BaseModelManager):
                 # Only do one sequential write at a time
                 with self._disk_write_mutex:
                     with open(cache_file, "wb") as cache:
-                        for component in components:
-                            pickle.dump(
-                                self.get_loaded_model(model_name)[component],
-                                cache,
-                                protocol=pickle.HIGHEST_PROTOCOL,
-                            )
+                        c = zstd.ZstdCompressor()
+                        with c.stream_writer(cache) as compressor:
+                            for component in components:
+                                pickle.dump(
+                                    self.get_loaded_model(model_name)[component],
+                                    compressor,
+                                    protocol=pickle.HIGHEST_PROTOCOL,
+                                )
             for component in components:
                 model_data[component] = cache_file
             # Remove from vram/ram
